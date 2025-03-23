@@ -1,8 +1,21 @@
 use std::collections::HashSet;
 
+trait QueryBase {
+    fn validate(&self) -> Result<(), String>;
+}
+
+pub trait QueryFrom {
+    fn get_file_path(&self) -> Result<String, String>;
+}
+
+pub trait QuerySelect {
+    fn get_select(&self) -> Vec<String>;
+}
+
+
 #[derive(Debug)]
 pub struct Query {
-    clauses: Vec<String>,
+    pub clauses: Vec<String>,
 }
 
 impl Query {
@@ -12,39 +25,25 @@ impl Query {
     }
 
     pub fn validate(&self) -> Result<(), String> {
+        QueryBase::validate(self)
+    }
+
+    pub fn get_file_path(&self) -> Result<String, String> {
+        QueryFrom::get_file_path(self)
+    }
+
+    pub fn get_select(&self) -> Vec<String> {
+        QuerySelect::get_select(self)
+    }
+}
+
+impl QueryBase for Query {
+    fn validate(&self) -> Result<(), String> {
         if self.clauses.is_empty() || self.clauses[0] != "SELECT" {
             return Err("syntax error: query must start with SELECT".to_string());
         }
 
         Ok(())
-    }
-
-    pub fn get_file_path(&self) -> Result<String, String> {
-        let mut file_path: Option<String> = None;
-        for (i, v) in self.clauses.iter().enumerate() {
-            if v == "FROM" && i + 1 < self.clauses.len() {
-                file_path = Some(self.clauses[i + 1].clone());
-                break;
-            }
-        }
-        match file_path {
-            Some(path) => Ok(path),
-            None => Err("syntax error: FROM must specify a file path".to_string()),
-        }
-    }
-
-    pub fn get_select(&self) -> Vec<String> {
-        let mut columns = Vec::new();
-        for clause in self.clauses.iter().skip(1) {
-            if clause == "FROM" {
-                break;
-            }
-            if clause != "," {
-                let col = clause.clone();
-                columns.push(col);
-            }
-        }
-        columns
     }
 }
 
