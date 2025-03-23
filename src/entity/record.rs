@@ -1,4 +1,4 @@
-use super::query::Order;
+use super::query::{Order, WhereCondition};
 
 pub type Records = Vec<Vec<String>>;
 
@@ -37,6 +37,74 @@ impl Record {
 
         rows as Records
     }
+
+    pub fn fileter_rows(records: &Records, conditions: &WhereCondition) -> Records {
+        let mut filtered = records.clone();
+        for condition in conditions {
+            filtered = filter_row_condition(filtered, condition)
+        }
+
+        filtered
+    }
+}
+
+fn filter_row_condition(r: Records, condition: &Vec<String>) -> Records {
+    if r.is_empty() {
+        return r;
+    }
+
+    let (column, operator, value) = (&condition[0], &condition[1], &condition[2]);
+    let mut column_index = -1;
+
+    let header = &r[0];
+    for (i, v) in header.iter().enumerate() {
+        if v == column {
+            column_index = i as isize;
+            break;
+        }
+    }
+
+    if column_index == -1 {
+        return r;
+    }
+
+    let mut fileterd = vec![header.clone()];
+
+    for row in &r[1..] {
+        if row.len() <= column_index as usize {
+            continue;
+        }
+
+        let cell_value = &row[column_index as usize];
+        let mut match_condition = false;
+
+        match operator.as_str() {
+            "=" => match_condition = cell_value == value,
+            "!=" => match_condition = cell_value != value,
+            "<" | ">" | "<=" | ">=" => {
+                let cell_num = cell_value.parse::<f64>();
+                let value_num = cell_value.parse::<f64>();
+
+                match (cell_num, value_num) {
+                    (Ok(cell), Ok(val)) => match operator.as_str() {
+                        "<" => match_condition = cell < val,
+                        ">" => match_condition = cell > val,
+                        "<=" => match_condition = cell <= val,
+                        ">=" => match_condition = cell >= val,
+                        _ => (),
+                    },
+                    _ => (),
+                }
+            }
+            _ => (),
+        }
+
+        if match_condition {
+            fileterd.push(row.clone());
+        }
+    }
+
+    fileterd
 }
 
 #[cfg(test)]
@@ -103,6 +171,28 @@ mod test {
             vec!["3".to_string(), "name3".to_string()],
             vec!["2".to_string(), "name2".to_string()],
             vec!["1".to_string(), "name1".to_string()],
+        ];
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_fileter_rows() {
+        let records: Records = vec![
+            vec!["id".to_string(), "name".to_string()],
+            vec!["1".to_string(), "name1".to_string()],
+            vec!["2".to_string(), "name2".to_string()],
+            vec!["3".to_string(), "name3".to_string()],
+        ];
+
+        let conditions: WhereCondition = vec![
+            vec!["id".to_string(), "=".to_string(), "2".to_string()],
+        ];
+
+        let result = Record::fileter_rows(&records, &conditions);
+        let expected: Records = vec![
+            vec!["id".to_string(), "name".to_string()],
+            vec!["2".to_string(), "name2".to_string()],
         ];
 
         assert_eq!(result, expected)

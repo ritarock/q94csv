@@ -11,6 +11,8 @@ pub struct Order {
     pub condition: String,
 }
 
+pub type WhereCondition = Vec<Vec<String>>;
+
 trait QueryBase {
     fn validate(&self) -> Result<(), String>;
 }
@@ -29,6 +31,10 @@ pub trait QueryLimit {
 
 pub trait QueryOrder {
     fn get_order(&self) -> Order;
+}
+
+pub trait QueryWhereCondition {
+    fn get_where(&self) -> WhereCondition;
 }
 
 impl Query {
@@ -55,6 +61,10 @@ impl Query {
 
     pub fn get_order(&self) -> Order {
         QueryOrder::get_order(self)
+    }
+
+    pub fn get_where(&self) -> WhereCondition {
+        QueryWhereCondition::get_where(self)
     }
 }
 
@@ -108,10 +118,12 @@ fn append_token(clauses: &mut Vec<String>, token: &mut String) {
 }
 
 fn is_reserved_word(word: &str) -> bool {
-    let reserved: HashSet<&str> = ["select", "from", "limit", "order", "by", "asc", "desc"]
-        .iter()
-        .cloned()
-        .collect();
+    let reserved: HashSet<&str> = [
+        "select", "from", "limit", "order", "by", "asc", "desc", "where",
+    ]
+    .iter()
+    .cloned()
+    .collect();
     reserved.contains(&word.to_lowercase().as_str())
 }
 
@@ -197,6 +209,11 @@ mod test_query_helper {
         assert_eq!(is_reserved_word("SELECT"), true);
         assert_eq!(is_reserved_word("FROM"), true);
         assert_eq!(is_reserved_word("LIMIT"), true);
+        assert_eq!(is_reserved_word("ORDER"), true);
+        assert_eq!(is_reserved_word("BY"), true);
+        assert_eq!(is_reserved_word("ASC"), true);
+        assert_eq!(is_reserved_word("DESC"), true);
+        assert_eq!(is_reserved_word("WHERE"), true);
         assert_eq!(is_reserved_word("column"), false);
     }
 }

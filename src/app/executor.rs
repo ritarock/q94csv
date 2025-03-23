@@ -50,6 +50,13 @@ impl Executor {
             }
         }
 
+        let where_condition = query.get_where();
+        let records = if !where_condition.is_empty() {
+            record::Record::fileter_rows(&records, &where_condition)
+        } else {
+            records.clone()
+        };
+
         let order = query.get_order();
         let records = record::Record::sort_rows(&records, &order);
 
