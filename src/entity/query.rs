@@ -12,6 +12,10 @@ pub trait QuerySelect {
     fn get_select(&self) -> Vec<String>;
 }
 
+pub trait QueryLimit {
+    fn get_limit(&self) -> u32;
+}
+
 #[derive(Debug)]
 pub struct Query {
     pub clauses: Vec<String>,
@@ -33,6 +37,10 @@ impl Query {
 
     pub fn get_select(&self) -> Vec<String> {
         QuerySelect::get_select(self)
+    }
+
+    pub fn get_limit(&self) -> u32 {
+        QueryLimit::get_limit(self)
     }
 }
 
@@ -86,7 +94,7 @@ fn append_token(clauses: &mut Vec<String>, token: &mut String) {
 }
 
 fn is_reserved_word(word: &str) -> bool {
-    let reserved: HashSet<&str> = ["select", "from"].iter().cloned().collect();
+    let reserved: HashSet<&str> = ["select", "from", "limit"].iter().cloned().collect();
     reserved.contains(&word.to_lowercase().as_str())
 }
 
@@ -171,6 +179,7 @@ mod test_query_helper {
     fn test_is_reserved_word() {
         assert_eq!(is_reserved_word("SELECT"), true);
         assert_eq!(is_reserved_word("FROM"), true);
+        assert_eq!(is_reserved_word("LIMIT"), true);
         assert_eq!(is_reserved_word("column"), false);
     }
 }

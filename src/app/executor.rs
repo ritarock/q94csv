@@ -1,4 +1,10 @@
-use crate::{entity::query::Query, infra::file::CSVReader};
+use crate::{
+    entity::{
+        query::Query,
+        record::{Records, limit_rows},
+    },
+    infra::file::CSVReader,
+};
 
 pub struct Executor {
     pub csv_reader: CSVReader,
@@ -18,7 +24,7 @@ impl Executor {
     pub fn execute(&self, query: Query) -> Result<Results, String> {
         let file_path = query.get_file_path().map_err(|err| err)?;
         let read_csv = self.csv_reader.read(&file_path).map_err(|err| err)?;
-        let records: Vec<Vec<String>> = read_csv;
+        let records: Records = read_csv;
 
         if records.len() == 0 {
             return Ok(Results {
@@ -43,6 +49,13 @@ impl Executor {
                 }
             }
         }
+
+        let limit = query.get_limit();
+        let records = if limit > 0 {
+            limit_rows(&records, limit)
+        } else {
+            records.clone()
+        };
 
         let mut result = Results {
             header: column_indices.iter().map(|&i| headers[i].clone()).collect(),
