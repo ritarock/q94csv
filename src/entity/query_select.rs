@@ -15,3 +15,24 @@ impl QuerySelect for Query {
         columns
     }
 }
+
+#[cfg(test)]
+mod test_query_select {
+    use super::*;
+
+    #[test]
+    fn test_get_select() {
+        let query = Query::new("select column1, column2 from ./sample.csv");
+        let result = query.get_select();
+        let expected = vec!["column1".to_string(), "column2".to_string()];
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_get_select_with_comma() {
+        let query = Query::new("select column1 , column2 from ./sample.csv");
+        let result = query.get_select();
+        let expected = vec!["column1".to_string(), "column2".to_string()];
+        assert_eq!(result, expected);
+    }
+}

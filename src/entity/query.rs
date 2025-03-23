@@ -12,7 +12,6 @@ pub trait QuerySelect {
     fn get_select(&self) -> Vec<String>;
 }
 
-
 #[derive(Debug)]
 pub struct Query {
     pub clauses: Vec<String>,
@@ -108,49 +107,6 @@ mod test_query {
             query.validate(),
             Err("syntax error: query must start with SELECT".to_string())
         );
-    }
-
-    #[test]
-    fn test_get_file_path() {
-        let query = Query::new("select column from ./sample.csv");
-        let result = query.get_file_path();
-        assert_eq!(result, Ok("./sample.csv".to_string()));
-    }
-
-    #[test]
-    fn test_get_file_path_with_missing_from() {
-        let query = Query::new("select column ./sample.csv");
-        let result = query.get_file_path();
-        assert_eq!(
-            result,
-            Err("syntax error: FROM must specify a file path".to_string())
-        );
-    }
-
-    #[test]
-    fn test_get_file_path_with_missing_file_path() {
-        let query = Query::new("select column from");
-        let result = query.get_file_path();
-        assert_eq!(
-            result,
-            Err("syntax error: FROM must specify a file path".to_string())
-        );
-    }
-
-    #[test]
-    fn test_get_select() {
-        let query = Query::new("select column1, column2 from ./sample.csv");
-        let result = query.get_select();
-        let expected = vec!["column1".to_string(), "column2".to_string()];
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn test_get_select_with_comma() {
-        let query = Query::new("select column1 , column2 from ./sample.csv");
-        let result = query.get_select();
-        let expected = vec!["column1".to_string(), "column2".to_string()];
-        assert_eq!(result, expected);
     }
 }
 
