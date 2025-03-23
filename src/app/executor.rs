@@ -50,6 +50,9 @@ impl Executor {
             }
         }
 
+        let order = query.get_order();
+        let records = record::Record::sort_rows(&records, &order);
+
         let limit = query.get_limit();
         let records = if limit > 0 {
             record::Record::limit_rows(&records, limit)

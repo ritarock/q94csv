@@ -1,5 +1,16 @@
 use std::collections::HashSet;
 
+#[derive(Debug)]
+pub struct Query {
+    pub clauses: Vec<String>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Order {
+    pub column: String,
+    pub condition: String,
+}
+
 trait QueryBase {
     fn validate(&self) -> Result<(), String>;
 }
@@ -16,9 +27,8 @@ pub trait QueryLimit {
     fn get_limit(&self) -> u32;
 }
 
-#[derive(Debug)]
-pub struct Query {
-    pub clauses: Vec<String>,
+pub trait QueryOrder {
+    fn get_order(&self) -> Order;
 }
 
 impl Query {
@@ -41,6 +51,10 @@ impl Query {
 
     pub fn get_limit(&self) -> u32 {
         QueryLimit::get_limit(self)
+    }
+
+    pub fn get_order(&self) -> Order {
+        QueryOrder::get_order(self)
     }
 }
 
@@ -94,7 +108,10 @@ fn append_token(clauses: &mut Vec<String>, token: &mut String) {
 }
 
 fn is_reserved_word(word: &str) -> bool {
-    let reserved: HashSet<&str> = ["select", "from", "limit"].iter().cloned().collect();
+    let reserved: HashSet<&str> = ["select", "from", "limit", "order", "by", "asc", "desc"]
+        .iter()
+        .cloned()
+        .collect();
     reserved.contains(&word.to_lowercase().as_str())
 }
 
