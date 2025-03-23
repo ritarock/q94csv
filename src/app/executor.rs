@@ -1,7 +1,7 @@
 use crate::{
     entity::{
         query::Query,
-        record::{Records, limit_rows},
+        record::{self, Records},
     },
     infra::file::CSVReader,
 };
@@ -52,7 +52,7 @@ impl Executor {
 
         let limit = query.get_limit();
         let records = if limit > 0 {
-            limit_rows(&records, limit)
+            record::Record::limit_rows(&records, limit)
         } else {
             records.clone()
         };
