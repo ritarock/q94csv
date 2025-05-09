@@ -15,8 +15,8 @@ impl Handler {
         Handler { args }
     }
 
-    pub fn run(&self) -> Result<(Command, String)>{
-        let _ =self.validate();
+    pub fn run(&self) -> Result<(Command, String)> {
+        let _ = self.validate();
 
         let file_path = self.get_file_path()?;
         let cmd = self.get_command()?;
@@ -34,7 +34,7 @@ impl Handler {
 
         match cmd.as_str() {
             "all" => Ok(()),
-            "header" => Ok(()),
+            "headers" => Ok(()),
             _ => Err(anyhow!("unkown command: {}", cmd)),
         }
     }
@@ -44,7 +44,7 @@ impl Handler {
 
         match cmd.as_str() {
             "all" => Ok(Command::All),
-            "header" => Ok(Command::Header),
+            "headers" => Ok(Command::Headers),
             _ => Err(anyhow!("unkown command: {}", cmd)),
         }
     }
@@ -54,8 +54,21 @@ impl Handler {
         Ok(file.clone())
     }
 
+    fn is_command_headers(&self) -> bool {
+        let cmd = self.get_command().unwrap_or(Command::Headers);
+        match cmd {
+            Command::Headers => true,
+            _ => false,
+        }
+    }
+
     pub fn display(&self, cli_result: CliResult) {
         let mut output = io::stdout();
+
+        if self.is_command_headers() {
+            let _ = writeln!(output, "{}", cli_result.header.join(", "));
+            return;
+        }
 
         let _ = writeln!(output, "{}", cli_result.header.join("\t"));
 
@@ -82,7 +95,7 @@ mod tests {
         let handler = Handler::new(vec!["test.csv".into(), "all".into()]);
         assert!(handler.validate().is_ok());
 
-        let handler = Handler::new(vec!["test.csv".into(), "header".into()]);
+        let handler = Handler::new(vec!["test.csv".into(), "headers".into()]);
         assert!(handler.validate().is_ok());
         Ok(())
     }
@@ -121,9 +134,9 @@ mod tests {
         let command = handler.get_command()?;
         assert_eq!(command, Command::All);
 
-        let handler = Handler::new(vec!["test.csv".into(), "header".into()]);
+        let handler = Handler::new(vec!["test.csv".into(), "headers".into()]);
         let command = handler.get_command()?;
-        assert_eq!(command, Command::Header);
+        assert_eq!(command, Command::Headers);
         Ok(())
     }
 

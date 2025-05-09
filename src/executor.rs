@@ -23,7 +23,7 @@ impl Executor {
     pub fn run(&self) -> Result<CliResult> {
         match self.command {
             Command::All => self.all(),
-            Command::Header => self.header(),
+            Command::Headers => self.headers(),
         }
     }
 
@@ -39,7 +39,7 @@ impl Executor {
         Ok(CliResult { header, rows })
     }
 
-    fn header(&self) -> Result<CliResult> {
+    fn headers(&self) -> Result<CliResult> {
         let read_csv = self.csv_reader.read()?;
         let header = read_csv[0].clone();
 
