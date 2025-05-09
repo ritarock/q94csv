@@ -15,7 +15,16 @@ impl Handler {
         Handler { args }
     }
 
-    pub fn validate(&self) -> Result<()> {
+    pub fn run(&self) -> Result<(Command, String)>{
+        let _ =self.validate();
+
+        let file_path = self.get_file_path()?;
+        let cmd = self.get_command()?;
+
+        Ok((cmd, file_path.clone()))
+    }
+
+    fn validate(&self) -> Result<()> {
         self.args.get(0).with_context(|| "not enough args")?;
         let cmd = self.args.get(1).with_context(|| "no command provided")?;
 
@@ -30,7 +39,7 @@ impl Handler {
         }
     }
 
-    pub fn get_command(&self) -> Result<Command> {
+    fn get_command(&self) -> Result<Command> {
         let cmd = self.args.get(1).with_context(|| "not enough args")?;
 
         match cmd.as_str() {
@@ -40,7 +49,7 @@ impl Handler {
         }
     }
 
-    pub fn get_file_path(&self) -> Result<String> {
+    fn get_file_path(&self) -> Result<String> {
         let file = self.args.get(0).with_context(|| "not enough args")?;
         Ok(file.clone())
     }

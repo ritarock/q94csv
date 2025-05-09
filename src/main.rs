@@ -21,12 +21,9 @@ fn main() {
 
 fn run() -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
+
     let handler = Handler::new(args);
-    handler.validate()?;
-
-    let cmd = handler.get_command()?;
-
-    let file_path = handler.get_file_path()?;
+    let (cmd, file_path) = handler.run()?;
 
     let executor = Executor::new(cmd, file_path);
     let cli_result = executor.run()?;
