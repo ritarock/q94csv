@@ -16,7 +16,7 @@ impl Handler {
     }
 
     pub fn run(&self) -> Result<(Command, String)> {
-        let _ = self.validate();
+        self.validate()?;
 
         let file_path = self.get_file_path()?;
         let cmd = self.get_command()?;
@@ -35,6 +35,7 @@ impl Handler {
         match cmd.as_str() {
             "all" => Ok(()),
             "headers" => Ok(()),
+            "count" => Ok(()),
             _ => Err(anyhow!("unkown command: {}", cmd)),
         }
     }
@@ -45,6 +46,7 @@ impl Handler {
         match cmd.as_str() {
             "all" => Ok(Command::All),
             "headers" => Ok(Command::Headers),
+            "count" => Ok(Command::Count),
             _ => Err(anyhow!("unkown command: {}", cmd)),
         }
     }
@@ -88,14 +90,16 @@ impl Handler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use anyhow::Result;
 
     #[test]
-    fn test_validate_succeed() -> Result<()> {
+    fn test_validate_succeed() -> anyhow::Result<()> {
         let handler = Handler::new(vec!["test.csv".into(), "all".into()]);
         assert!(handler.validate().is_ok());
 
         let handler = Handler::new(vec!["test.csv".into(), "headers".into()]);
+        assert!(handler.validate().is_ok());
+
+        let handler = Handler::new(vec!["test.csv".into(), "count".into()]);
         assert!(handler.validate().is_ok());
         Ok(())
     }
@@ -129,7 +133,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_command_succeed() -> Result<()> {
+    fn test_get_command_succeed() -> anyhow::Result<()> {
         let handler = Handler::new(vec!["test.csv".into(), "all".into()]);
         let command = handler.get_command()?;
         assert_eq!(command, Command::All);
@@ -137,6 +141,10 @@ mod tests {
         let handler = Handler::new(vec!["test.csv".into(), "headers".into()]);
         let command = handler.get_command()?;
         assert_eq!(command, Command::Headers);
+
+        let handler = Handler::new(vec!["test.csv".into(), "count".into()]);
+        let command = handler.get_command()?;
+        assert_eq!(command, Command::Count);
         Ok(())
     }
 
@@ -155,7 +163,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_file_path_succeed() -> Result<()> {
+    fn test_get_file_path_succeed() -> anyhow::Result<()> {
         let handler = Handler::new(vec!["test.csv".into(), "delete".into()]);
         let file_path = handler.get_file_path()?;
         assert_eq!(file_path, "test.csv");
